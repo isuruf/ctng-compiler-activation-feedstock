@@ -52,6 +52,8 @@ else
   export CONDA_BUILD_CROSS_COMPILATION="1"
 fi
 
+linux_machine=$(echo ${CHOST}| cut -d "-" -f1)
+
 if [[ "$cross_target_platform" == linux-ppc64le ]]; then
   MESON_FAMILY=ppc64
 else

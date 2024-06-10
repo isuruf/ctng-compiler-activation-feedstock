@@ -13,6 +13,34 @@
 # https://github.com/gcc-mirror/gcc/commit/9e18a25331fa25c3907249fede65a02c6817b06e
 {% set last_symbol_bump = 12 %}
 {% set min_runtime_version = gcc_major if gcc_major|int > last_symbol_bump else last_symbol_bump %}
+{% set libgfortran_soname = 5 %}
+
+{% if cross_target_platform == "linux-64" %}
+{% set triplet = "x86_64-conda-linux-gnu" %}
+{% set cross_stdlib = "sysroot" %}
+{% set cross_stdlib_version = "2.12" %}
+
+{% elif cross_target_platform == "linux-ppc64le" %}
+{% set triplet = "powerpc64le-conda-linux-gnu" %}
+{% set cross_stdlib = "sysroot" %}
+{% set cross_stdlib_version = "2.17" %}
+
+{% elif cross_target_platform == "linux-aarch64" %}
+{% set triplet = "aarch64-conda-linux-gnu" %}
+{% set cross_stdlib = "sysroot" %}
+{% set cross_stdlib_version = "2.17" %}
+
+{% elif cross_target_platform == "linux-s390x" %}
+{% set triplet = "s390x-conda-linux-gnu" %}
+{% set cross_stdlib = "sysroot" %}
+{% set cross_stdlib_version = "2.17" %}
+
+{% elif cross_target_platform == "win-64" %}
+{% set triplet = "x86_64-w64-mingw32" %}
+{% set cross_stdlib = "m2w64-sysroot" %}
+{% set cross_stdlib_version = "12" %}
+
+{% endif %}
 
 package:
   name: ctng-compiler-activation
@@ -51,7 +79,6 @@ outputs:
       files:
         - tests
       commands:
-        - echo {{ linux_machine }}
         - ${CC} ${CFLAGS} -Wall tests/aligned_alloc.c -c -o c_aligned.o -v
         - ${CC} ${LDFLAGS} c_aligned.o -o c_aligned     # [target_platform == cross_target_platform]
         - ./c_aligned                                   # [target_platform == cross_target_platform]
@@ -87,7 +114,6 @@ outputs:
       files:
         - tests
       commands:
-        - echo {{ linux_machine }}
         - ${CC} ${CFLAGS} -Wall tests/aligned_alloc.c -c -o c_aligned.o -v
         - ${CC} ${LDFLAGS} c_aligned.o -o c_aligned     # [target_platform == cross_target_platform]
         - ./c_aligned                                   # [target_platform == cross_target_platform]
@@ -208,6 +234,7 @@ outputs:
       commands:
         - ${FC} --version
         - pushd tests/fortomp
+        - test -f ${PREFIX}/lib/libgfortran.so.{{ libgfortran_soname }}    # [target_platform == cross_target_platform and linux]
         - sh test_fort.sh       # [target_platform == cross_target_platform and (x86_64 or aarch64 or ppc64le)]
       files:
         - tests/fortomp/*
